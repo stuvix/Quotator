@@ -14,6 +14,7 @@ import javax.swing.JTextField;
 import javax.swing.WindowConstants;
 
 import parsing.AbstractParser;
+import regex.parsing.Parser;
 
 public class MainFrame extends JFrame{
 	private JLabel authorLabel;
@@ -28,12 +29,9 @@ public class MainFrame extends JFrame{
 	private JTextField publisherField;
 	private JTextField placeField;
 	
-	private JTextField resultField;
-	
 	private JEditorPane resultPane;
 	
-	private JComboBox ddMenu;
-	private AbstractParser selectedParser;
+	private JComboBox<AbstractParser> ddMenu;
 	
 	private JButton doIt;
 	
@@ -79,6 +77,7 @@ public class MainFrame extends JFrame{
 		pane.add(authorLabel, c);
 		
 		authorField = new JTextField(40);
+		authorField.addActionListener((e) -> enterOnPushAction(e));
 		c.gridx++;
 		pane.add(authorField, c);
 		
@@ -88,6 +87,7 @@ public class MainFrame extends JFrame{
 		pane.add(titleLabel, c);
 		
 		titleField = new JTextField(40);
+		titleField.addActionListener((e) -> enterOnPushAction(e));
 		c.gridx++;
 		pane.add(titleField, c);
 		
@@ -97,6 +97,7 @@ public class MainFrame extends JFrame{
 		pane.add(dateLabel, c);
 		
 		dateField = new JTextField(20);
+		dateField.addActionListener((e) -> enterOnPushAction(e));
 		c.gridx++;
 		pane.add(dateField, c);
 		
@@ -106,6 +107,7 @@ public class MainFrame extends JFrame{
 		pane.add(publisherLabel, c);
 		
 		publisherField = new JTextField(40);
+		publisherField.addActionListener((e) -> enterOnPushAction(e));
 		c.gridx++;
 		pane.add(publisherField, c);
 		
@@ -115,15 +117,9 @@ public class MainFrame extends JFrame{
 		pane.add(placeLabel, c);
 		
 		placeField = new JTextField(40);
+		placeField.addActionListener((e) -> enterOnPushAction(e));
 		c.gridx++;
 		pane.add(placeField, c);
-		
-		/*resultField = new JTextField(40);
-		resultField.setEditable(false);
-		c.gridx--;
-		c.gridy++;
-		c.gridwidth = 2;
-		pane.add(resultField, c);*/
 		
 		resultPane = new JEditorPane();
 		resultPane.setContentType("text/html");
@@ -140,26 +136,40 @@ public class MainFrame extends JFrame{
 	 * initializes the styles list
 	 */
 	private void initStyleList() {
-		//String[] list = {"APA", "MLA", "Chicago"};
-		ddMenu = new JComboBox(AbstractParser.getAllParsers());
+		ddMenu = new JComboBox<AbstractParser>(AbstractParser.getAllParsers());
 		ddMenu.setEditable(false);	
 		ddMenu.setEnabled(true);
 		ddMenu.setSelectedIndex(0);
-		ddMenu.addActionListener((e) -> listAction(e));
 		ddMenu.setVisible(true);
 	}
 	
-	private void listAction(ActionEvent e) {
-		//TODO
-        JComboBox cb = (JComboBox)e.getSource();
-        AbstractParser style = (AbstractParser) cb.getSelectedItem();
-        this.selectedParser = style;
-        //System.out.println(this.selected); ///testing purposes
-    }
-	
 	private void doItAction(ActionEvent e) {
-		//TODO
-		this.resultPane.setText(this.selectedParser.parse());
+		//this.resultPane.setText(((AbstractParser) (ddMenu.getSelectedItem())).parse());
+		try {
+			Parser parser = new Parser("A, F((, F A)*, and F A)?. D. <i>T</i>. L: P."); //
+			SanitizedInputInterface sip = new SanitizedInputInterface();
+			this.resultPane.setText(parser.parse());
+		}
+		catch (IllegalArgumentException e1) {
+			e1.printStackTrace();
+		}
+	}
+	
+	/**
+	 * when a style is selected, the text fields that are not used by this style will be disabled, all others enabled.
+	 * @param e
+	 */
+	private void listSelectionAction(ActionEvent e) {
+		AbstractParser current = (AbstractParser) ddMenu.getSelectedItem();
+		//TODO disable unused fields if Style is selected
+	}
+	
+	/**
+	 * gets used if enter is pressed in one of the textfields
+	 * @param e
+	 */
+	private void enterOnPushAction(ActionEvent e) {
+		this.doItAction(e);
 	}
 	
 	public static void main(String[] args) {
