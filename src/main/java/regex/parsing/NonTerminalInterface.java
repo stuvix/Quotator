@@ -8,12 +8,12 @@ import gui.SanitizedInputInterface;
  *
  */
 public class NonTerminalInterface {
-	protected static final String FIRST_NAME = "F";
-	protected static final String LAST_NAME = "A";
-	protected static final String TITLE = "T";
-	protected static final String DATE = "D";
-	protected static final String PUBLISHER = "P";
-	protected static final String LOCATION = "L";
+	public static final String FIRST_NAME = "F";
+	public static final String LAST_NAME = "A";
+	public static final String TITLE = "T";
+	public static final String DATE = "D";
+	public static final String PUBLISHER = "P";
+	public static final String LOCATION = "L";
 	
 	private SanitizedInputInterface gui;
 	

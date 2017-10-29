@@ -14,7 +14,6 @@ import javax.swing.JTextField;
 import javax.swing.WindowConstants;
 
 import parsing.AbstractParser;
-import regex.parsing.Parser;
 
 public class MainFrame extends JFrame{
 	private JLabel authorLabel;
@@ -63,6 +62,7 @@ public class MainFrame extends JFrame{
 		
 		initStyleList();
 		c.gridwidth = 2;
+		ddMenu.addActionListener((e) -> listSelectionAction(e));
 		pane.add(ddMenu, c);
 		c.gridwidth = 1;
 		
@@ -144,11 +144,11 @@ public class MainFrame extends JFrame{
 	}
 	
 	private void doItAction(ActionEvent e) {
-		//this.resultPane.setText(((AbstractParser) (ddMenu.getSelectedItem())).parse());
 		try {
-			Parser parser = new Parser("A, F((, F A)*, and F A)?. D. <i>T</i>. L: P."); //
+			this.resultPane.setText(((AbstractParser) (ddMenu.getSelectedItem())).parse());
+			/*Parser parser = new Parser("A, F((, F A)*, and F A)?. D. <i>T</i>. L: P."); //
 			SanitizedInputInterface sip = new SanitizedInputInterface();
-			this.resultPane.setText(parser.parse());
+			this.resultPane.setText(parser.parse());*/
 		}
 		catch (IllegalArgumentException e1) {
 			e1.printStackTrace();
@@ -161,7 +161,11 @@ public class MainFrame extends JFrame{
 	 */
 	private void listSelectionAction(ActionEvent e) {
 		AbstractParser current = (AbstractParser) ddMenu.getSelectedItem();
-		//TODO disable unused fields if Style is selected
+		this.authorField.setEnabled(current.canUseAuthor());
+		this.titleField.setEnabled(current.canUseTitle());
+		this.dateField.setEnabled(current.canUseDate());
+		this.placeField.setEnabled(current.canUseLocation());
+		this.publisherField.setEnabled(current.canUsePublisher());
 	}
 	
 	/**

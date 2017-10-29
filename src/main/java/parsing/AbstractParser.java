@@ -2,9 +2,12 @@ package parsing;
 
 import java.util.ArrayList;
 
-import gui.MainFrame;
+import gui.SanitizedInputInterface;
+import regex.parsing.NonTerminalInterface;
+import regex.parsing.Parser;
 
-public abstract class AbstractParser {
+public abstract class AbstractParser {	
+	protected String regex;
 	
 	private static ArrayList<AbstractParser> parserList; 
 	
@@ -17,49 +20,32 @@ public abstract class AbstractParser {
 	}
 	
 	public boolean canUseAuthor() {
-		return false;
+		return getRegex().contains(NonTerminalInterface.LAST_NAME);
 	}
 	
 	public boolean canUseTitle() {
-		return false;
+		return getRegex().contains(NonTerminalInterface.TITLE);
 	}
 	
 	public boolean canUsePublisher() {
-		return false;
+		return getRegex().contains(NonTerminalInterface.PUBLISHER);
 	}
 	
-	public boolean canUsePlace() {
-		return false;
+	public boolean canUseLocation() {
+		return getRegex().contains(NonTerminalInterface.LOCATION);
 	}
 	
 	public boolean canUseDate() {
-		return false;
+		return getRegex().contains(NonTerminalInterface.DATE);
 	}
 	
-	/**
-	 * set authors for later parsing
-	 * @param authors a list of authors separated by commas
-	 */
-	protected String[] getAuthor() {
-		String authors =  MainFrame.getFrame().getAuthor();
-		return authors.split(",");
+	public String parse() {
+		Parser parser = new Parser(this.getRegex());
+		new SanitizedInputInterface();
+		return parser.parse();
 	}
 	
-	protected String getTitle() {
-		return MainFrame.getFrame().getTitleField();
-	}
+	protected abstract String getRegex();
 	
-	protected String getPublisher() {
-		return MainFrame.getFrame().getPublisher();
-	}
-	
-	protected String getPlace() {
-		return MainFrame.getFrame().getPlace();
-	}
-	
-	protected String getDate() {
-		return MainFrame.getFrame().getDate(); //TODO more complex date parsing
-	}
-	
-	public abstract String parse();
+	public abstract String toString();
 }
