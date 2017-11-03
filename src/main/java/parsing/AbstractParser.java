@@ -10,7 +10,6 @@ import org.reflections.Reflections;
 
 import gui.SanitizedInputInterface;
 import regex.parsing.NonTerminalEnum;
-import regex.parsing.NonTerminalInterface;
 import regex.parsing.Parser;
 
 public abstract class AbstractParser {	
