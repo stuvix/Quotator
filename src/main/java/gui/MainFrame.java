@@ -28,6 +28,7 @@ public class MainFrame extends JFrame{
 	private JComboBox<AbstractParser> ddMenu;
 	
 	private JButton doIt;
+	private boolean doItEnabled = true;
 	
 	private static MainFrame frame;
 	
@@ -76,6 +77,7 @@ public class MainFrame extends JFrame{
 		c.gridwidth = 2;
 		this.resultPane = new JEditorPane();
 		resultPane.setContentType("text/html");
+		resultPane.setEditable(false);
 		pane.add(resultPane, c);
 		c.gridwidth = 1;
 		
@@ -108,6 +110,11 @@ public class MainFrame extends JFrame{
 	}
 	
 	private void doItAction(ActionEvent e) {
+		if (!this.doItEnabled) {
+			return; //prevent the button from being pressed while another parser still runs
+		}
+		this.doItEnabled = false;
+		
 		try {
 			this.resultPane.setText(((AbstractParser) (ddMenu.getSelectedItem())).parse());
 			pack();
@@ -116,6 +123,7 @@ public class MainFrame extends JFrame{
 		catch (IllegalArgumentException e1) {
 			e1.printStackTrace();
 		}
+		this.doItEnabled = true;
 	}
 	
 	/**

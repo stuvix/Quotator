@@ -1,7 +1,7 @@
 package parsing;
 
 public class TestParser extends AbstractParser {
-	private String regex = "F A C T?";
+	private String regex = "F A $C T?"; //Chapter should not show
 
 	@Override
 	protected String getRegex() {

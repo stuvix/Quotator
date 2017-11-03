@@ -75,7 +75,7 @@ public enum NonTerminalEnum {
 			if (current.equals(this.key)) {
 				return true;
 			}
-			if (this.equals(Parser.ESCAPE)) {
+			if (current.equals(Parser.ESCAPE)) {
 				i++;
 			}
 			i++;

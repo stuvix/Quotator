@@ -6,6 +6,7 @@ public class Parser {
 	private static final String PLUS = "+";
 	protected static final String ESCAPE = "$";
 	
+	public boolean hasRunForTooLong = false; //this is set to true by a timer after some time.
 	
 	private String regex;
 	private NonTerminalInterface nti;
@@ -34,6 +35,10 @@ public class Parser {
 	 * @return true if this line worked, false otherwise
 	 */
 	private boolean parseRec(int position, Stack stack, String regex) {
+		//do a quick check to see if we are running too long and abort because infinite loop.
+		if (this.hasRunForTooLong) {
+			return false;
+		}
 		//System.out.println("BP1: " + stack.toString() + " " + position); //TODO
 		/*Component temp = stack.pop(); //check he condition without the last element on the stack, as it could be removed by an operator
 		if (!stack.isOnlyTerminals() && !nti.checkAllNumConstraints(stack.getNonTerminalsInString())) {
@@ -42,9 +47,10 @@ public class Parser {
 		}
 		if (temp != null) {
 			stack.push(temp);
-		}	*/ //TODO this thing was removed and may lead to endless loops, but not if always not is selected first
+		}	*/ //TODO this thing was removed and may lead to endless loops, but not if option without recursion is selected first
 		if (position >= regex.length()) {
 			//we are finished with this run
+			
 			//check for more correctness and return 
 			if (nti.checkAllExactConstraints(stack.getNonTerminalsInString())) {
 				this.result = stack.fillIn();
