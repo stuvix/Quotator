@@ -1,24 +1,16 @@
 package gui;
 
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
+
+import regex.parsing.NonTerminalEnum;
 
 public class SanitizedInputInterface {
 	private MainFrame gui;
 	
-	private LinkedList<String> firstNames;
-	private LinkedList<String> lastNames;
-	private LinkedList<String> titles;
-	private LinkedList<String> dates;
-	private LinkedList<String> publishers;
-	private LinkedList<String> locations;
-	
-	private Iterator<String> firstNameIterator;
-	private Iterator<String> lastNameIterator;
-	private Iterator<String> titlesIterator;
-	private Iterator<String> datesIterator;
-	private Iterator<String> publishersIterator;
-	private Iterator<String> locationsIterator;
+	private HashMap<NonTerminalEnum, LinkedList<String>> inputMap;
+	private HashMap<NonTerminalEnum, Iterator<String>> itMap;
 	
 	/**
 	 * creates a new Sanitized input Interface with all the lists reset.
@@ -27,111 +19,74 @@ public class SanitizedInputInterface {
 	 */
 	public SanitizedInputInterface() {
 		gui = MainFrame.getFrame();
+		inputMap = new HashMap<>();
+		itMap = new HashMap<>();
 		
-		firstNames = new LinkedList<>();
-		lastNames = new LinkedList<>();
-		this.fillAuthors();
-		this.firstNameIterator = this.firstNames.iterator();
-		this.lastNameIterator = this.lastNames.iterator();
-		titles = new LinkedList<>();
-		this.fillTitles();
-		this.titlesIterator = this.titles.iterator();
-		dates = new LinkedList<>();
-		this.fillDates();
-		this.datesIterator = this.dates.iterator();
-		publishers = new LinkedList<>();
-		this.fillPublishers();
-		this.publishersIterator = this.publishers.iterator();
-		locations = new LinkedList<>();
-		this.fillLocations();
-		this.locationsIterator = this.locations.iterator();
+		String input;
+		for (NonTerminalEnum nte: NonTerminalEnum.values()) {
+			inputMap.put(nte, new LinkedList<>());
+			if (nte == NonTerminalEnum.FIRST_NAME || nte == NonTerminalEnum.LAST_NAME) {
+				continue; //added later; 
+			}
+			input = gui.getTextFieldByIdentifier(nte);
+			if (!input.equals("")) {
+				inputMap.get(nte).add(input);
+			} //else leave list empty
+			itMap.put(nte, inputMap.get(nte).iterator());
+		}
+		addAuthor();
+		
 	}
 	
 	/**
-	 * primitive Author parsing. Accepts only two piece names separated by ", "
+	 * hack to add authors to this mess, since they behave differently (2 NonTerminals, but only one text field...)
 	 */
-	private void fillAuthors() {
-		if (gui.getAuthor().equals("")) {
-			return;
+	private void addAuthor() {
+		String input = gui.getTextFieldByIdentifier(NonTerminalEnum.LAST_NAME);
+		LinkedList<String> lnl = this.inputMap.get(NonTerminalEnum.LAST_NAME);
+		LinkedList<String> fnl = this.inputMap.get(NonTerminalEnum.FIRST_NAME);
+		String[] parsed;
+		for (String name: input.split(", ")) {
+			parsed = this.parseAuthor(name);
+			lnl.add(parsed[1]);
+			fnl.add(parsed[0]);
 		}
-		String[] authors = gui.getAuthor().split(", ");
-		for (int i = 0; i < authors.length; i++) {
-			firstNames.add(authors[i].split(" ")[0]);
-			lastNames.add(authors[i].split(" ")[1]);
+		itMap.put(NonTerminalEnum.LAST_NAME, inputMap.get(NonTerminalEnum.LAST_NAME).iterator());
+		itMap.put(NonTerminalEnum.FIRST_NAME, inputMap.get(NonTerminalEnum.FIRST_NAME).iterator());
+	}
+	
+	/**
+	 * takes an author from input and separates first and last name into an array
+	 * @param author a plain text author
+	 * @return an array with two entries, 0: first name(s), 1: last name
+	 */
+	private String[] parseAuthor(String author) {
+		String[] split = author.split(" ");
+		String[] result = new String[2];
+		result[0] = "";
+		result[0] += split[0]; //if this does not exist, fuck the user
+		for (int i = 1; i < split.length - 1; i++) {
+			result[0] += " " + split[i];
 		}
+		result[1] = split[split.length - 1];
+		return result;
 	}
 	
-	private void fillTitles() {
-		if (gui.getTitleField().equals("")) {
-			return;
-		}
-		else {
-			titles.add(gui.getTitleField());
-		}
+	public int getNumberOfInput(NonTerminalEnum nte) {
+		return inputMap.get(nte).size();
 	}
 	
-	private void fillDates() {
-		String s = gui.getDate();
-		if (!s.equals("")) {
-			this.dates.add(s);
-		}
+	/**
+	 * returns the next user input of given type
+	 * @param nte a use input type
+	 * @return throws exception if there is no next element, else returns next element
+	 */
+	public String getNextOfType(NonTerminalEnum nte) {
+		return itMap.get(nte).next();
 	}
 	
-	private void fillLocations() {
-		String s = gui.getPlace();
-		if (!s.equals("")) {
-			this.locations.add(s);
-		}
+	public boolean containsNTE(NonTerminalEnum nte) {
+		return this.gui.getParser().canUse(nte);
 	}
-	
-	private void fillPublishers() {
-		String s = gui.getPublisher();
-		if (!s.equals("")) {
-			this.publishers.add(s);
-		}
-	}
-	
-	public int getNumOfAuthors() {
-		return this.lastNames.size();
-	}
-	
-	public int getNumOfTitles() {
-		return this.titles.size();
-	}
-	
-	public int getNumOfDates() {
-		return this.dates.size();
-	}
-	
-	public int getNumOfLocations() {
-		return this.locations.size();
-	}
-	
-	public int getNumOfPublishers() {
-		return this.publishers.size();
-	}
-	
-	public String getNextFirstName() {
-		return this.firstNameIterator.next();
-	}
-	public String getNextLastName() {
-		return this.lastNameIterator.next();
-	}
-	
-	public String getNextTitle() {
-		return this.titlesIterator.next();
-	}
-	
-	public String getNextDate() {
-		return this.datesIterator.next();
-	}
-	
-	public String getNextLocation() {
-		return this.locationsIterator.next();
-	}
-	
-	public String getNextPublisher() {
-		return this.publishersIterator.next();
-	}	
 
 }

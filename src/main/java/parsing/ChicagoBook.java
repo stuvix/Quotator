@@ -1,7 +1,7 @@
 package parsing;
 
 public class ChicagoBook extends AbstractParser {
-	protected final String regex = "A, F((, F A)*, and F A)?. D. <i>T</i>. L: P.";
+	protected final String regex = "A, F((, F A)*, and F A)?. D. <i>T</i>. ($Edited by E.)? L: P.";//
 
 	@Override
 	public String toString() {

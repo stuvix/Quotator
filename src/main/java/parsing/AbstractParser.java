@@ -3,6 +3,7 @@ package parsing;
 import java.util.ArrayList;
 
 import gui.SanitizedInputInterface;
+import regex.parsing.NonTerminalEnum;
 import regex.parsing.NonTerminalInterface;
 import regex.parsing.Parser;
 
@@ -15,34 +16,24 @@ public abstract class AbstractParser {
 		if (parserList == null) {
 			parserList = new ArrayList<>();
 			parserList.add(new ChicagoBook());
+			parserList.add(new TestParser());
 		}
 		return parserList.toArray(new AbstractParser[1]);
 	}
 	
-	public boolean canUseAuthor() {
-		return getRegex().contains(NonTerminalInterface.LAST_NAME);
-	}
-	
-	public boolean canUseTitle() {
-		return getRegex().contains(NonTerminalInterface.TITLE);
-	}
-	
-	public boolean canUsePublisher() {
-		return getRegex().contains(NonTerminalInterface.PUBLISHER);
-	}
-	
-	public boolean canUseLocation() {
-		return getRegex().contains(NonTerminalInterface.LOCATION);
-	}
-	
-	public boolean canUseDate() {
-		return getRegex().contains(NonTerminalInterface.DATE);
+	/**
+	 * determines whether this style uses the given identifier.
+	 * @param identifier
+	 * @return
+	 */
+	public boolean canUse(NonTerminalEnum identifier) {
+		return identifier.isIn(this.getRegex());
 	}
 	
 	public String parse() {
 		Parser parser = new Parser(this.getRegex());
 		new SanitizedInputInterface();
-		return parser.parse();
+		return parser.parse(); //TODO recognize endless loop and abort
 	}
 	
 	protected abstract String getRegex();

@@ -1,10 +1,13 @@
 package regex.parsing;
 
 public class NonTerminal implements Component {
-	private String s;
+	private NonTerminalEnum nte;
 
 	public NonTerminal(String s) {
-		this.s = s;
+		this.nte = NonTerminalEnum.getNTE(s);
+		if (this.nte == null) {
+			throw new IllegalArgumentException("This is not a Non Terminal");
+		}
 	}
 	
 	@Override
@@ -14,16 +17,16 @@ public class NonTerminal implements Component {
 
 	@Override
 	public String getNonTerminalsInString() {
-		return s;
+		return nte.getKey();
 	}
 
 	@Override
 	public String fillIn() {
-		return NonTerminalInterface.getInstance().fillIn(s);
+		return NonTerminalInterface.getInstance().fillIn(nte);
 	}
 	
 	public String toString() {
-		return s;
+		return nte.getKey();
 	}
 
 }

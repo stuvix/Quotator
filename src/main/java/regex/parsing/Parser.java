@@ -4,6 +4,7 @@ public class Parser {
 	private static final String Q_MARK = "?";
 	private static final String STAR = "*";
 	private static final String PLUS = "+";
+	protected static final String ESCAPE = "$";
 	
 	
 	private String regex;
@@ -34,14 +35,14 @@ public class Parser {
 	 */
 	private boolean parseRec(int position, Stack stack, String regex) {
 		//System.out.println("BP1: " + stack.toString() + " " + position); //TODO
-		Component temp = stack.pop(); //check he condition without the last element on the stack, as it could be removed by an operator
+		/*Component temp = stack.pop(); //check he condition without the last element on the stack, as it could be removed by an operator
 		if (!stack.isOnlyTerminals() && !nti.checkAllNumConstraints(stack.getNonTerminalsInString())) {
 			//System.out.println("BP2: " + stack.toString());//TODO
 			return false; //in this case, there are more of one non-terminal than arguments provided
 		}
 		if (temp != null) {
 			stack.push(temp);
-		}	
+		}	*/ //TODO this thing was removed and may lead to endless loops, but not if always not is selected first
 		if (position >= regex.length()) {
 			//we are finished with this run
 			//check for more correctness and return 
@@ -63,12 +64,13 @@ public class Parser {
 			switch (currentSymbol) {
 			case Q_MARK:
 				recStack = new Stack(stack);
-				if (parseRec(position + 1, new Stack(stack), regex)) {
+				recStack.pop();
+				//first try without ?
+				if (parseRec(position + 1, recStack, regex)) {
 					return true;
 				}
-				recStack.pop();
-				assert false;
-				if (parseRec(position + 1, recStack, regex)) {
+				//then try with ?
+				if (parseRec(position + 1, new Stack(stack), regex)) {
 					return true;
 				}
 				return false;
@@ -106,8 +108,6 @@ public class Parser {
 			recStack = new Stack();
 			recStack.setParent(stack);
 			//System.out.println("BP3: " + recStack.getParent().toString()); //TODO
-			//stack.push(recStack);
-			//recStack.getParent().push(recStack);
 			return parseRec(position + 1, recStack, regex);
 		}
 		
@@ -118,14 +118,21 @@ public class Parser {
 			return parseRec(position + 1, temp1, regex);
 		}
 		
-		if (NonTerminalInterface.isNonTerminal(currentSymbol)) {
+		if (NonTerminalEnum.isNonTerminal(currentSymbol)) {
 			stack.push(new NonTerminal(currentSymbol));
 			return parseRec(position + 1, stack, regex);
 		}
 		
 		else {
-			stack.push(new Terminal(currentSymbol));
-			return parseRec(position + 1, stack, regex);
+			if (currentSymbol.equals(ESCAPE)) {
+				//escape the next symbol and add it as plain text
+				stack.push(new Terminal(regex.substring(position + 1, position + 2)));
+				return parseRec(position + 2, stack, regex);
+			}
+			else {
+				stack.push(new Terminal(currentSymbol));
+				return parseRec(position + 1, stack, regex);
+			}
 		}
 	}
 	
@@ -141,18 +148,6 @@ public class Parser {
 			return s;
 		}
 		return s.substring(0, position) + to + s.substring(position + 1);
-	}
-	
-	/**
-	 * checks if, so far, any non-terminal appears more often than provided by user.
-	 * @param stack
-	 * @return true if everything is okay, false if a non-terminal appears more often than provided by user
-	 */
-	private boolean check(Stack stack) {
-		if (stack.isOnlyTerminals()) {
-			return true;
-		}
-		return nti.checkAllNumConstraints(stack.getNonTerminalsInString());
 	}
 	
 	/**

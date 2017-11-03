@@ -18,7 +18,7 @@ public interface Component {
 	/**
 	 * returns this component as a String with the non-terminals filled in. take care in which order these are called,
 	 * as result is order sensitive.
-	 * @return a finished Strign representation of this component.
+	 * @return a finished String representation of this component.
 	 */
 	public String fillIn();
 	
