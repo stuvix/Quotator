@@ -1,5 +1,8 @@
 package regex.parsing;
 
+import java.util.Iterator;
+import java.util.LinkedList;
+
 public class Parser {
 	private static final String Q_MARK = "?";
 	private static final String STAR = "*";
@@ -13,18 +16,21 @@ public class Parser {
 	
 	private String result;
 	
+	private int testCounter = 0; //TODO remove after testing
+	
 	public Parser(String regex) {
 		this.nti = new NonTerminalInterface(); //get the input from the gui for this parsing experience 
 		this.regex = regex;
 	}
 	
 	public String parse() {
-		if (parseRec(0, new Stack(), this.regex)) {
+		/*if (parseRec(0, new Stack(), this.regex)) {
 			return result;
 		}
 		else {
 			throw new IllegalArgumentException();
-		}
+		}*/
+		return this.parseBFS(regex); //TODO choose parser
 	}
 	
 	/**
@@ -57,7 +63,12 @@ public class Parser {
 				return true;
 			}
 			else {
-				//System.out.println("Fail"); //TODO
+				System.out.println("Fail: " + stack.toString()); 
+				testCounter++;
+				if (testCounter > 10) {
+					this.hasRunForTooLong = true;
+				}
+				//TODO remove these lines after testing
 				return false;
 			}
 		}
@@ -82,19 +93,23 @@ public class Parser {
 				return false;
 			case STAR:
 				recStack = new Stack(stack);
+				//first try without the element that is starred
 				stack.pop();
 				if (parseRec(position + 1, new Stack(stack), regex)) {
 					return true;
 				}
+				//then set of a recursive call of the same place with a + instead of *
 				if (parseRec(position, recStack, changeNthCharacterTo(regex, position, "+"))) {
 					return true; //after eliminating the "case 0" for the *, it behaves just like a +.
 				}
 				return false;
 			case PLUS:
 				recStack = new Stack(stack);
+				//first try with the element present once
 				if (parseRec(position + 1, new Stack(stack), regex)) {
 					return true;
 				}
+				//then push the top element another time and do recursion
 				Component c = recStack.pop(); 
 				if (c == null) {
 					//System.out.println("----" + recStack.getParent().toString()); //TODO
@@ -140,6 +155,169 @@ public class Parser {
 				return parseRec(position + 1, stack, regex);
 			}
 		}
+	}
+	
+	/**
+	 * another approach to parsing with BFS strategy
+	 * @param regex the regex
+	 * @return the parsed String
+	 */
+	public String parseBFS(String regex) {
+		LinkedList<Stack> mainStackList = new LinkedList<>();
+		LinkedList<Integer> mainPointerList = new LinkedList<>();
+		LinkedList<Stack> helperStackList = new LinkedList<>();
+		LinkedList<Integer> helperPointerList = new LinkedList<>();
+		LinkedList<String> mainRegexList = new LinkedList<>();
+		LinkedList<String> helperRegexList = new LinkedList<>();
+		
+		Stack currentStack;
+		int currentPointer;
+		String currentSymbol;
+		String currentRegex;
+		
+		Stack s; //helper variables
+		Component c;
+		
+		Iterator<Stack> stackIt;
+		Iterator<Integer> pointerIt;
+		Iterator<String> regexIt;
+		
+		mainStackList.add(new Stack());
+		mainPointerList.add(0);
+		mainRegexList.add(regex);
+		
+		while (!this.hasRunForTooLong) {
+			
+			stackIt = mainStackList.iterator(); //these should always have the same length
+			pointerIt = mainPointerList.iterator();
+			regexIt = mainRegexList.iterator();
+			
+			while (stackIt.hasNext()) {
+				currentStack = stackIt.next();
+				currentPointer = pointerIt.next();
+				currentRegex = regexIt.next();
+				currentSymbol = currentRegex.substring(currentPointer, currentPointer + 1);
+				
+				switch (currentSymbol) {
+				case (Q_MARK):
+					//add with element
+					helperStackList.add(new Stack(currentStack));
+					helperPointerList.add(new Integer(currentPointer) + 1);
+					helperRegexList.add(regex);
+					
+					//add without element
+					currentStack.pop();
+					helperStackList.add(new Stack(currentStack));
+					helperPointerList.add(new Integer(currentPointer) + 1);
+					helperRegexList.add(regex);
+					break;
+				
+				case (STAR):
+					//add with element and a PLUS instead of STAR
+					helperStackList.add(new Stack(currentStack));
+					helperPointerList.add(new Integer(currentPointer));
+					helperRegexList.add(this.changeNthCharacterTo(currentRegex, currentPointer, PLUS));
+					
+					//add one without the element
+					currentStack.pop();
+					helperStackList.add(new Stack(currentStack));
+					helperPointerList.add(new Integer(currentPointer) + 1);
+					helperRegexList.add(currentRegex);
+					break;
+					
+				case(PLUS):
+					//leave element be and advance
+					helperStackList.add(new Stack(currentStack));
+					helperPointerList.add(new Integer(currentPointer) + 1);
+					helperRegexList.add(regex);
+					
+					//add last element another time
+					c = currentStack.pop();
+					currentStack.push(c);
+					currentStack.push(c);
+					helperStackList.add(new Stack(currentStack));
+					helperPointerList.add(new Integer(currentPointer) + 1);
+					helperRegexList.add(regex);
+					break;
+					
+				case ("("):
+					//create new empty stack and set current as parent of the new stack
+					s = new Stack();
+					s.setParent(currentStack);
+					helperStackList.add(s);
+					helperPointerList.add(new Integer(currentPointer) + 1);
+					helperRegexList.add(regex);
+					break;
+					
+				case (")"):
+					//set the parent of current as the new stack and add the current to the parent
+					s = currentStack.getParent();
+					s.push(currentStack);
+					helperStackList.add(s);
+					helperPointerList.add(new Integer(currentPointer) + 1);
+					helperRegexList.add(regex);
+					break;
+					
+				case (ESCAPE):
+					//push the next symbol and advance two
+					currentStack.push(new Terminal(currentRegex.substring(currentPointer + 1, currentPointer + 2)));
+					helperStackList.add(new Stack(currentStack));
+					helperPointerList.add(new Integer(currentPointer) + 2);
+					helperRegexList.add(regex);
+					break;
+					
+				default:
+					if (NonTerminalEnum.isNonTerminal(currentSymbol)) {
+						currentStack.push(new NonTerminal(currentSymbol));
+						helperStackList.add(new Stack(currentStack));
+						helperPointerList.add(new Integer(currentPointer) + 1);
+						helperRegexList.add(regex);
+					}
+					else {
+						currentStack.push(new Terminal(currentSymbol));
+						helperStackList.add(new Stack(currentStack));
+						helperPointerList.add(new Integer(currentPointer) + 1);
+						helperRegexList.add(regex);
+					}
+				}								
+			}
+			
+			//the helper lists become the main lists now
+			mainStackList.clear();
+			mainStackList.addAll(helperStackList);
+			mainPointerList.clear();
+			mainPointerList.addAll(helperPointerList);
+			mainRegexList.clear();
+			mainRegexList.addAll(helperRegexList);
+			
+			//check if any of the new stacks have arrived
+			stackIt = mainStackList.iterator(); //these should always have the same length
+			pointerIt = mainPointerList.iterator();
+			regexIt = mainRegexList.iterator();
+			
+			while (pointerIt.hasNext()) {
+				if (pointerIt.next() >= regexIt.next().length()) {
+					//this one has arrived
+					currentStack = stackIt.next();
+					if (!currentStack.isOnlyTerminals() && nti.checkAllExactConstraints(currentStack.getNonTerminalsInString())) {
+						//this is it
+						return currentStack.fillIn();
+					}
+					else {
+						stackIt.remove();
+						pointerIt.remove();
+						regexIt.remove();
+					}
+				}
+			}
+			
+			helperStackList.clear();
+			helperPointerList.clear();
+			helperRegexList.clear();
+			assert mainPointerList.size() == mainRegexList.size();
+			assert mainPointerList.size() == mainStackList.size();
+		}
+		return "An Error occured";
 	}
 	
 	/**
