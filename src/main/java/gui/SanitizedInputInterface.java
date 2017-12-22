@@ -46,10 +46,12 @@ public class SanitizedInputInterface {
 		LinkedList<String> lnl = this.inputMap.get(NonTerminalEnum.LAST_NAME);
 		LinkedList<String> fnl = this.inputMap.get(NonTerminalEnum.FIRST_NAME);
 		String[] parsed;
-		for (String name: input.split(", ")) {
-			parsed = this.parseAuthor(name);
-			lnl.add(parsed[1]);
-			fnl.add(parsed[0]);
+		if (!input.equals("")) { //if input is empty, do not add anything to lists
+			for (String name: input.split(", ")) {
+				parsed = this.parseAuthor(name);
+				lnl.add(parsed[1]);
+				fnl.add(parsed[0]);
+			}
 		}
 		itMap.put(NonTerminalEnum.LAST_NAME, inputMap.get(NonTerminalEnum.LAST_NAME).iterator());
 		itMap.put(NonTerminalEnum.FIRST_NAME, inputMap.get(NonTerminalEnum.FIRST_NAME).iterator());

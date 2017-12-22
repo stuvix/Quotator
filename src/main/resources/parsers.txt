@@ -1,0 +1,7 @@
+#This is the file to add parsers to. 
+# # marks a comment line. 
+#This is an example of a valid definition: 
+#name: Parser Name
+#regex: F A $Hey $Guys
+#watch the capitalization (all small for name: and regex:). Spaces after ':' and before the first non-space character afterwards are ignored.
+#

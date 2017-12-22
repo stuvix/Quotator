@@ -160,7 +160,7 @@ public class Parser {
 	/**
 	 * another approach to parsing with BFS strategy
 	 * @param regex the regex
-	 * @return the parsed String
+	 * @return the parsed String or an error message to display
 	 */
 	public String parseBFS(String regex) {
 		LinkedList<Stack> mainStackList = new LinkedList<>();
@@ -236,7 +236,7 @@ public class Parser {
 					currentStack.push(c);
 					currentStack.push(c);
 					helperStackList.add(new Stack(currentStack));
-					helperPointerList.add(new Integer(currentPointer) + 1);
+					helperPointerList.add(new Integer(currentPointer));
 					helperRegexList.add(regex);
 					break;
 					
@@ -310,6 +310,16 @@ public class Parser {
 					}
 				}
 			}
+			
+			if (mainStackList.isEmpty()) {
+				return "No Solution found, maybe check you input?";
+			}
+			
+			/*for (Stack ps: mainStackList) {
+				System.out.print(ps.toString());
+			}*/
+			//System.out.println(mainStackList.size()); //TODO
+			
 			
 			helperStackList.clear();
 			helperPointerList.clear();

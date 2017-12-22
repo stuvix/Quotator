@@ -1,5 +1,9 @@
 package regex.parsing;
 
+import java.awt.event.ActionEvent;
+
+import javax.swing.JOptionPane;
+
 public enum NonTerminalEnum {
 	FIRST_NAME("F", "First Name of Author"), //this one is not drawn
 	LAST_NAME("A", "Name of Author"),
@@ -89,6 +93,17 @@ public enum NonTerminalEnum {
 	
 	public String getName() {
 		return this.name;
+	}
+	
+	/**
+	 * convenience method to create  a popup with all nonterminals.
+	 */
+	public static void createPopUpWithValidNonTerminals() {
+		String string = "";
+		for (NonTerminalEnum nte: NonTerminalEnum.values()) {
+			string += nte.key + ": " + nte.name + " \n";
+		}
+		JOptionPane.showMessageDialog(null, string);
 	}
 }
 

@@ -30,6 +30,9 @@ public abstract class AbstractParser {
 			Reflections reflections = new Reflections("parsing");    
 			Set<Class<? extends AbstractParser>> classes = reflections.getSubTypesOf(parsing.AbstractParser.class);
 			for (Class<? extends AbstractParser> c: classes) {
+				if (c.equals(ParserFromFile.class)) {
+					continue; //do not load this class dynamically, it can lead to errors
+				}
 				try {
 					parserList.add(c.newInstance());
 				} catch (InstantiationException e) {
@@ -40,6 +43,8 @@ public abstract class AbstractParser {
 					e.printStackTrace();
 				}
 			}
+			ParserLoader loader = new ParserLoader();
+			parserList.addAll(loader.loadParsers());
 		}
 		return parserList.toArray(new AbstractParser[1]);
 	}

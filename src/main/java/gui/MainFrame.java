@@ -12,12 +12,17 @@ import javax.swing.JComboBox;
 import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.WindowConstants;
 
 import parsing.AbstractParser;
 
+@SuppressWarnings("serial")
 public class MainFrame extends JFrame{
 	
 	private HashMap<NonTerminalEnum, JLabel> labelList = new HashMap<>();
@@ -26,6 +31,10 @@ public class MainFrame extends JFrame{
 	private JEditorPane resultPane;
 	
 	private JComboBox<AbstractParser> ddMenu;
+	
+	private JMenuBar menuBar;
+	private JMenu parserMenu;
+	private JMenu aboutMenu;
 	
 	private JButton doIt;
 	private boolean doItEnabled = true;
@@ -94,6 +103,9 @@ public class MainFrame extends JFrame{
 		c.gridx = 2;
 		pane.add(doIt, c);
 		c.gridx = 0;
+		
+		createMenu();
+		
 		pack();
 	}
 	
@@ -152,6 +164,28 @@ public class MainFrame extends JFrame{
 		this.doItAction(e);
 	}
 	
+	private void createMenu() {
+		menuBar = new JMenuBar();
+		//menu parsers
+		parserMenu = new JMenu("Parsers");
+		JMenuItem openNonTerminalList = new JMenuItem("Show all Non Terminals");
+		openNonTerminalList.addActionListener(l -> NonTerminalEnum.createPopUpWithValidNonTerminals());
+		parserMenu.add(openNonTerminalList);
+		menuBar.add(parserMenu);
+		//menu about
+		aboutMenu = new JMenu("about");
+		JMenuItem aboutMenuItem = new JMenuItem("about");
+		aboutMenuItem.addActionListener(l -> aboutPopup());
+		aboutMenu.add(aboutMenuItem);
+		menuBar.add(aboutMenu);
+		
+		this.setJMenuBar(menuBar);
+	}
+	
+	private void aboutPopup() {
+		JOptionPane.showMessageDialog(null, "Quotator, 2017- \n" + "Created by Michel Max");
+	}
+	
 	public static void main(String[] args) {
 		javax.swing.SwingUtilities.invokeLater(new Runnable() {
             public void run() {
@@ -165,10 +199,19 @@ public class MainFrame extends JFrame{
 	} 
 	
 	public static MainFrame getFrame() {
+		assert frame != null;
 		return frame;
 	}
 	
 	public AbstractParser getParser() {
 		return (AbstractParser) ddMenu.getSelectedItem();
 	}
+	
+	/**
+	 * allows other classes to create popup messages for errors and such
+	 * @param message this string is displayed.
+	 */
+	/*public void createPopup(String message) {
+		JOptionPane.showMessageDialog(this, message);
+	}*/
 }
